@@ -1227,7 +1227,7 @@ func TestParser(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		report, err := parser.Parse(file, testCase.packageName)
+		report, err := parser.Parse(file, testCase.packageName, parser.NoOutput)
 		if err != nil {
 			t.Fatalf("error parsing: %s", err)
 		}

@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"bufio"
 	"io"
 	"regexp"
@@ -17,6 +18,13 @@ const (
 	PASS Result = iota
 	FAIL
 	SKIP
+)
+
+// some output levels
+const (
+	NoOutput = iota
+	BasicOutput
+	FullOutput
 )
 
 // Report is a collection of package tests.
@@ -70,7 +78,7 @@ var (
 // Parse parses go test output from reader r and returns a report with the
 // results. An optional pkgName can be given, which is used in case a package
 // result line is missing.
-func Parse(r io.Reader, pkgName string) (*Report, error) {
+func Parse(r io.Reader, pkgName string, outputLevel int) (*Report, error) {
 	reader := bufio.NewReader(r)
 
 	report := &Report{make([]Package, 0)}
@@ -113,6 +121,10 @@ func Parse(r io.Reader, pkgName string) (*Report, error) {
 
 		line := string(l)
 
+		if(outputLevel == FullOutput) {
+			fmt.Println(line)
+		}
+
 		if strings.HasPrefix(line, "=== RUN ") {
 			// new test
 			cur = strings.TrimSpace(line[8:])
@@ -141,6 +153,9 @@ func Parse(r io.Reader, pkgName string) (*Report, error) {
 			cur = strings.TrimSpace(line[8:])
 			continue
 		} else if matches := regexResult.FindStringSubmatch(line); len(matches) == 6 {
+			if(outputLevel == BasicOutput) {
+				fmt.Println(line)
+			}
 			if matches[5] != "" {
 				coveragePct = matches[5]
 			}
@@ -205,6 +220,10 @@ func Parse(r io.Reader, pkgName string) (*Report, error) {
 		} else if matches := regexCoverage.FindStringSubmatch(line); len(matches) == 2 {
 			coveragePct = matches[1]
 		} else if matches := regexOutput.FindStringSubmatch(line); capturedPackage == "" && len(matches) == 3 {
+			if(outputLevel == BasicOutput) {
+				fmt.Println(line)
+			}
+
 			// Sub-tests start with one or more series of 4-space indents, followed by a hard tab,
 			// followed by the test output
 			// Top-level tests start with a hard tab.
