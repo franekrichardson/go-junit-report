@@ -168,6 +168,10 @@ func Parse(r io.Reader, pkgName string, outputLevel int) (*Report, error) {
 					Output: packageCaptures[matches[2]],
 				})
 			} else if matches[1] == "FAIL" && len(tests) == 0 && len(buffers[cur]) > 0 {
+				if(outputLevel == BasicOutput) {
+					fmt.Println(line)
+				}
+
 				// This package didn't have any tests, but it failed with some
 				// output. Create a dummy test with the output.
 				tests = append(tests, &Test{
@@ -208,6 +212,9 @@ func Parse(r io.Reader, pkgName string, outputLevel int) (*Report, error) {
 			} else if matches[1] == "SKIP" {
 				test.Result = SKIP
 			} else {
+				if(outputLevel == BasicOutput) {
+					fmt.Println(line)
+				}
 				test.Result = FAIL
 			}
 			test.Output = buffers[cur]
